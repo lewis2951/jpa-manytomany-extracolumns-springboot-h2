@@ -1,5 +1,6 @@
 package hello.domain;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -9,16 +10,18 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 @Entity(name = "BOOK_PUBLISHER")
-public class BookPublisher {
+public class BookPublisher implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	@Id
 	@ManyToOne
-	@JoinColumn(name = "book_id")
+	@JoinColumn(name = "BOOK_ID")
 	private Book book;
 
 	@Id
 	@ManyToOne
-	@JoinColumn(name = "publisher_id")
+	@JoinColumn(name = "PUBLISHER_ID")
 	private Publisher publisher;
 
 	@Column(name = "PUBLISHED_DATE")

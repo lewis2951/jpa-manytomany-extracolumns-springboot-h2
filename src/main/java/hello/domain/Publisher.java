@@ -1,5 +1,6 @@
 package hello.domain;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -10,11 +11,13 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
 @Entity(name = "PUBLISHER")
-public class Publisher {
+public class Publisher implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	private int id;
+	private Integer id;
 
 	@Column(name = "NAME")
 	private String name;
@@ -31,11 +34,11 @@ public class Publisher {
 		this.name = name;
 	}
 
-	public int getId() {
+	public Integer getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 

@@ -7,7 +7,7 @@
 	<artifactId>jpa-manytomany-extracolumns-springboot-h2</artifactId>
 	<version>0.1.0</version>
 
-	<name>JPA One-To-Many Example</name>
+	<name>JPA Many-To-Many with Extra Columns Example</name>
 	<description>JPA Many-To-Many Extra Columns Relationship Mapping Example with Spring Data JPA, Spring Boot, H2</description>
 
 	<parent>
