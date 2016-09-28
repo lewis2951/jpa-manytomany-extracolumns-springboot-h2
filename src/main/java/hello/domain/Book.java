@@ -1,6 +1,7 @@
 package hello.domain;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -33,6 +34,7 @@ public class Book implements Serializable {
 	public Book(String name) {
 		super();
 		this.name = name;
+		this.bookPublishers = new HashSet<>();
 	}
 
 	public Integer getId() {
