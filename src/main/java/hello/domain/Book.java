@@ -1,31 +1,27 @@
 package hello.domain;
 
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
-@Entity(name = "BOOK")
+@Entity
 public class Book implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue
 	private Integer id;
 
-	@Column(name = "NAME")
 	private String name;
 
 	@OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
-	private Set<BookPublisher> bookPublishers;
+	private Set<BookAuthor> bookAuthors;
 
 	public Book() {
 		super();
@@ -34,7 +30,12 @@ public class Book implements Serializable {
 	public Book(String name) {
 		super();
 		this.name = name;
-		this.bookPublishers = new HashSet<>();
+	}
+
+	public Book(String name, Set<BookAuthor> bookAuthors) {
+		super();
+		this.name = name;
+		this.bookAuthors = bookAuthors;
 	}
 
 	public Integer getId() {
@@ -53,12 +54,17 @@ public class Book implements Serializable {
 		this.name = name;
 	}
 
-	public Set<BookPublisher> getBookPublishers() {
-		return bookPublishers;
+	public Set<BookAuthor> getBookAuthors() {
+		return bookAuthors;
 	}
 
-	public void setBookPublishers(Set<BookPublisher> bookPublishers) {
-		this.bookPublishers = bookPublishers;
+	public void setBookAuthors(Set<BookAuthor> bookAuthors) {
+		this.bookAuthors = bookAuthors;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("Book [id=%s, name=%s, bookAuthors=%s]", id, name, bookAuthors);
 	}
 
 }

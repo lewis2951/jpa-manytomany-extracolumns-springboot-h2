@@ -9,8 +9,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
-@Entity(name = "BOOK_PUBLISHER")
-public class BookPublisher implements Serializable {
+@Entity(name = "BOOK_AUTHOR")
+public class BookAuthor implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -21,11 +21,11 @@ public class BookPublisher implements Serializable {
 
 	@Id
 	@ManyToOne
-	@JoinColumn(name = "PUBLISHER_ID")
-	private Publisher publisher;
+	@JoinColumn(name = "AUTHOR_ID")
+	private Author author;
 
-	@Column(name = "PUBLISHED_DATE")
-	private Date publishedDate;
+	@Column(name = "FINISH_DATE")
+	private Date finishDate;
 
 	public Book getBook() {
 		return book;
@@ -35,20 +35,20 @@ public class BookPublisher implements Serializable {
 		this.book = book;
 	}
 
-	public Publisher getPublisher() {
-		return publisher;
+	public Author getAuthor() {
+		return author;
 	}
 
-	public void setPublisher(Publisher publisher) {
-		this.publisher = publisher;
+	public void setAuthor(Author author) {
+		this.author = author;
 	}
 
-	public Date getPublishedDate() {
-		return publishedDate;
+	public Date getFinishDate() {
+		return finishDate;
 	}
 
-	public void setPublishedDate(Date publishedDate) {
-		this.publishedDate = publishedDate;
+	public void setFinishDate(Date finishDate) {
+		this.finishDate = finishDate;
 	}
 
 }

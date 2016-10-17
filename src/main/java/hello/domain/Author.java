@@ -3,33 +3,30 @@ package hello.domain;
 import java.io.Serializable;
 import java.util.Set;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
-@Entity(name = "PUBLISHER")
-public class Publisher implements Serializable {
+@Entity
+public class Author implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue
 	private Integer id;
 
-	@Column(name = "NAME")
 	private String name;
 
-	@OneToMany(mappedBy = "publisher")
-	private Set<BookPublisher> bookPublishers;
+	@OneToMany(mappedBy = "author")
+	private Set<BookAuthor> bookAuthors;
 
-	public Publisher() {
+	public Author() {
 		super();
 	}
 
-	public Publisher(String name) {
+	public Author(String name) {
 		super();
 		this.name = name;
 	}
@@ -50,12 +47,18 @@ public class Publisher implements Serializable {
 		this.name = name;
 	}
 
-	public Set<BookPublisher> getBookPublishers() {
-		return bookPublishers;
+	public Set<BookAuthor> getBookAuthors() {
+		return bookAuthors;
 	}
 
-	public void setBookPublishers(Set<BookPublisher> bookPublishers) {
-		this.bookPublishers = bookPublishers;
+	public void setBookAuthors(Set<BookAuthor> bookAuthors) {
+		this.bookAuthors = bookAuthors;
+	}
+
+	@Override
+	public String toString() {
+		// TODO bookAuthors --> authors
+		return String.format("Author [id=%s, name=%s, bookAuthors=%s]", id, name, bookAuthors);
 	}
 
 }
