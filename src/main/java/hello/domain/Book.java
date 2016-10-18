@@ -1,6 +1,7 @@
 package hello.domain;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -30,6 +31,7 @@ public class Book implements Serializable {
 	public Book(String name) {
 		super();
 		this.name = name;
+		bookAuthors = new HashSet<>();
 	}
 
 	public Book(String name, Set<BookAuthor> bookAuthors) {
@@ -64,6 +66,7 @@ public class Book implements Serializable {
 
 	@Override
 	public String toString() {
+		// TODO bookAuthors --> authors
 		return String.format("Book [id=%s, name=%s, bookAuthors=%s]", id, name, bookAuthors);
 	}
 

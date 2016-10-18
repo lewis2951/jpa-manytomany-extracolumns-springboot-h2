@@ -3,6 +3,7 @@ package hello;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
+import java.util.Date;
 
 import org.junit.After;
 import org.junit.Before;
@@ -14,6 +15,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import hello.domain.Author;
 import hello.domain.Book;
+import hello.domain.BookAuthor;
 import hello.repository.AuthorRepository;
 import hello.repository.BookRepository;
 
@@ -30,14 +32,22 @@ public class BookTests {
 	public void save() {
 		Book spring = new Book("Spring in Action");
 		Book springboot = new Book("Spring Boot in Action");
-		Book springdata = new Book("Spring Data in Action");
 
 		Author lewis = new Author("Lewis");
 		Author mark = new Author("Mark");
 		Author peter = new Author("Peter");
 
+		BookAuthor springLewis = new BookAuthor(spring, lewis, new Date());
+		BookAuthor springMark = new BookAuthor(spring, mark, new Date());
+
+		BookAuthor springbootLewis = new BookAuthor(springboot, lewis, new Date());
+		BookAuthor springbootPeter = new BookAuthor(springboot, peter, new Date());
+
+		spring.getBookAuthors().addAll(Arrays.asList(springLewis, springMark));
+		springboot.getBookAuthors().addAll(Arrays.asList(springbootLewis, springbootPeter));
+
 		authorRepository.save(Arrays.asList(lewis, mark, peter));
-		bookRepository.save(Arrays.asList(spring, springboot, springdata));
+		bookRepository.save(Arrays.asList(spring, springboot));
 	}
 
 	@After
@@ -47,7 +57,7 @@ public class BookTests {
 
 	@Test
 	public void findAll() {
-		assertThat(bookRepository.findAll()).hasSize(3);
+		assertThat(bookRepository.findAll()).hasSize(2);
 		assertThat(authorRepository.findAll()).hasSize(3);
 	}
 

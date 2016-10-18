@@ -57,7 +57,6 @@ public class Author implements Serializable {
 
 	@Override
 	public String toString() {
-		// TODO bookAuthors --> authors
 		return String.format("Author [id=%s, name=%s, bookAuthors=%s]", id, name, bookAuthors);
 	}
 

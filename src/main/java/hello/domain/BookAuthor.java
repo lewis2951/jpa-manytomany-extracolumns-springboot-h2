@@ -27,6 +27,19 @@ public class BookAuthor implements Serializable {
 	@Column(name = "FINISH_DATE")
 	private Date finishDate;
 
+	public BookAuthor(Book book, Author author) {
+		super();
+		this.book = book;
+		this.author = author;
+	}
+
+	public BookAuthor(Book book, Author author, Date finishDate) {
+		super();
+		this.book = book;
+		this.author = author;
+		this.finishDate = finishDate;
+	}
+
 	public Book getBook() {
 		return book;
 	}
