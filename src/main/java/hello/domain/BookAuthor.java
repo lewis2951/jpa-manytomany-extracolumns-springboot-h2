@@ -22,6 +22,10 @@ public class BookAuthor implements Serializable {
     @Column(name = "FINISH_DATE")
     private Date finishDate;
 
+    public BookAuthor() {
+        super();
+    }
+
     public BookAuthor(Book book, Author author) {
         super();
         this.book = book;
@@ -63,4 +67,5 @@ public class BookAuthor implements Serializable {
     public String toString() {
         return String.format("BookAuthor [book=%s, author=%s, finishDate=%s]", book.getName(), author.getName(), finishDate);
     }
+
 }

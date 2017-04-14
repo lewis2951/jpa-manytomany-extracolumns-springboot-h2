@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.persistence.Transient;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -27,7 +28,11 @@ public class BookRepositoryTests {
     @Autowired
     private AuthorRepository authorRepository;
 
+    /**
+     * 初始化：2本书，3位作者，4个关联关系
+     */
     @Before
+    @Transient
     public void save() {
         Book spring = new Book("Spring in Action");
         Book springboot = new Book("Spring Boot in Action");
@@ -49,6 +54,9 @@ public class BookRepositoryTests {
         bookRepository.save(Arrays.asList(spring, springboot));
     }
 
+    /**
+     * 清空所有数据
+     */
     @After
     public void deleteAll() {
         bookRepository.deleteAll();
@@ -60,8 +68,11 @@ public class BookRepositoryTests {
         assertThat(authorRepository.findAll()).hasSize(3);
     }
 
+    /**
+     * 清空书籍和作者的关联关系
+     */
     @Test
-    public void deleteBookAuthor() {
+    public void clearBookAuthor() {
         bookRepository.findAll().forEach(book -> {
             book.getBookAuthors().clear();
         });
@@ -70,12 +81,27 @@ public class BookRepositoryTests {
         assertThat(authorRepository.findAll()).hasSize(3);
     }
 
+    /**
+     * 删除其中一本书
+     */
     @Test
-    public void deleteAuthor() {
-        authorRepository.delete(1);
+    public void deleteBook() {
+        Book book = bookRepository.findByName("Spring in Action");
+        bookRepository.delete(book);
 
-        assertThat(bookRepository.findAll()).hasSize(2);
-        assertThat(authorRepository.findAll()).hasSize(2);
+        assertThat(bookRepository.findAll()).hasSize(1);
+        assertThat(authorRepository.findAll()).hasSize(3);
+    }
+
+    /**
+     * 删除所有书籍
+     */
+    @Test
+    public void deleteAllBooks() {
+        bookRepository.deleteAll();
+
+        assertThat(bookRepository.findAll()).isEmpty();
+        assertThat(authorRepository.findAll()).hasSize(3);
     }
 
 }

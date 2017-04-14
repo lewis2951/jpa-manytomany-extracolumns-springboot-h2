@@ -28,28 +28,82 @@ public class AppRunner implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        init(); // 插入2本书，3位作者，4个关联关系
+        // --------------------------------------------------
+        // 初始化
+        // --------------------------------------------------
+        init();
         display();
 
-        clearBookAuthor(); // 删除4个关联关系
-        display(); // 剩2本书和3位作者
+        // 精确查找
+        findBookByName("in Action");
+        findBookByName("Spring in Action");
 
-        // 清空数据继续后面的操作
+        // 模糊查找，但不支持忽略大小写、忽略收尾空格
+        findBookByNameContaining("action");
+        findBookByNameContaining("Action ");
+        findBookByNameContaining("Action");
+
+        // --------------------------------------------------
+        // 重新初始化，通过bookRepository演示对Book的操作
+        // --------------------------------------------------
+        reInit();
+        display();
+
+        // 更改书名
+        margeBook("Spring in Action");
+        display();
+
+        // 删除书籍，作者不会被删除
+        deleteBook("Spring Boot in Action");
+        display();
+
+        // --------------------------------------------------
+        // 重新初始化，通过bookRepository演示对Author的操作
+        // --------------------------------------------------
+        reInit();
+        display();
+
+        // 追加作者
+        // TODO: 2017/4/14 追加作者还需要进一步调试
+//        plusAuthor("Spring in Action", "Jacob");
+        plusAuthor("Spring in Action", "Mark");
+        display();
+
+        // 清空作者，只是清空关联关系，书籍和作者都还在
+        clearAuthor("Spring in Action");
+        display();
+
+        // 移除作者，只是移除关联关系，书籍和作者都还在
+        removeAuthor("Spring Boot in Action", "Peter");
+        removeAuthor("Spring Boot in Action", "Lewis");
+        display();
+
         reInit(); // 重新初始化
         display();
 
-        deleteBook("Spring in Action"); // 删除2个关联关系，1本书
+        // 移除全部作者，只是移除关联关系，书籍和作者都还在
+        removeAllAuthors("Spring in Action");
         display();
 
-        deleteAllBooks(); // 删除2个关联关系，1本书
-        display(); // 剩3位作者
+        // --------------------------------------------------
+        // 重新初始化，通过authorRepository演示对Author的操作
+        // --------------------------------------------------
+        reInit();
+        display();
+
+        // 删除作者，啥都删不掉，执行会报异常
+//        deleteAuthor("Peter");
+//        deleteAuthor("Lewis");
+//
+//        // 删除全部作者，啥都删不掉，执行会报异常
+//        deleteAllAuthors();
     }
 
     /**
-     * 数据展示
+     * 显示
      */
     private void display() {
-        logger.info("Display Books & Authors ...");
+        logger.info("Display all books & authors ...");
 
         bookRepository.findAll().forEach(book -> {
             logger.info(book.toString());
@@ -60,10 +114,10 @@ public class AppRunner implements CommandLineRunner {
     }
 
     /**
-     * 数据初始化
+     * 初始化
      */
     private void init() {
-        logger.info("Initial Books & Authors ...");
+        logger.info("Initial 2 books with 3 authors & 4 relationship ...");
 
         Book spring = new Book("Spring in Action");
         Book springboot = new Book("Spring Boot in Action");
@@ -86,63 +140,253 @@ public class AppRunner implements CommandLineRunner {
     }
 
     /**
-     * 清空书籍和作者的关联关系
-     */
-    private void clearBookAuthor() {
-        logger.info("Clear All [Book & Author]'s Relationship ...");
-
-        bookRepository.findAll().forEach(book -> {
-            book.getBookAuthors().clear();
-        });
-    }
-
-    /**
      * 重新初始化
      */
     private void reInit() {
-        deleteAll();
+        deleteAllBooks();
+        deleteAllAuthors();
         init();
     }
 
     /**
-     * 清空
+     * 删除全部（书籍和关联关系会被删除，作者不会被删除）
      */
-    private void deleteAll() {
-        logger.info("Delete All ...");
+    private void deleteAllBooks() {
+        logger.info(String.format("Delete all books ..."));
 
-        authorRepository.deleteAll();
         bookRepository.deleteAll();
     }
 
     /**
-     * 删除制定书籍
+     * 精确查找
      *
-     * @param bookName
+     * @param name
      */
-    private void deleteBook(String bookName) {
-        logger.info(String.format("Remove Book[name: %s] ...", bookName));
+    private void findBookByName(String name) {
+        logger.info(String.format("findBookByName [name:%s] ...", name));
 
-        Book book = bookRepository.findByName("Spring Boot in Action");
+        Book book = bookRepository.findByName(name);
+        if (null == book) {
+            logger.info(String.format("Book [%s]", "<empty>"));
+        } else {
+            logger.info(book.toString());
+        }
+    }
+
+    /**
+     * 模糊查找
+     *
+     * @param name
+     */
+    private void findBookByNameContaining(String name) {
+        logger.info(String.format("findBookByNameContaining [name:%s] ...", name));
+
+        bookRepository.findByNameContaining(name).forEach(book -> {
+            logger.info(book.toString());
+        });
+    }
+
+    /**
+     * 修改
+     *
+     * @param name
+     */
+    private void margeBook(String name) {
+        logger.info(String.format("margeBook [name:%s] ...", name));
+
+        Book book = bookRepository.findByName(name);
+        if (null == book) {
+            return;
+        }
+
+        book.setName(name + " (4th Edition)");
+        bookRepository.save(book);
+    }
+
+    /**
+     * 删除（书籍和关联关系被删除，作者不会被删除）
+     *
+     * @param name
+     */
+    private void deleteBook(String name) {
+        logger.info(String.format("deleteBook [name:$s]", name));
+
+        Book book = bookRepository.findByName(name);
+        if (null == book) {
+            return;
+        }
+
         bookRepository.delete(book);
     }
 
-    private void deleteAllBooks() {
-        logger.info("Remove All Books ...");
+    /**
+     * 为某书追加作者
+     *
+     * @param bookName
+     * @param authorName
+     */
+    private void plusAuthor(String bookName, String authorName) {
+        // TODO: 2017/4/14 追加作者还需要进一步调试
+        logger.info(String.format("plusAuthor [book_name:%s, author_name:%s] ...", bookName, authorName));
 
-        bookRepository.deleteAll();
+        Book book = bookRepository.findByName(bookName);
+        if (null == book) {
+            return;
+        }
+
+        Author author = authorRepository.findByName(authorName);
+        if (null != author) {
+            return;
+        }
+
+        author = new Author(authorName);
+        BookAuthor bookAuthor = new BookAuthor(book, author, new Date());
+        book.getBookAuthors().add(bookAuthor);
+        bookRepository.save(book);
     }
 
     /**
-     * 删除制定作者
+     * 清空某书的作者
      *
+     * @param bookName
+     */
+    private void clearAuthor(String bookName) {
+        logger.info(String.format("clearAuthor [book_name:%s]", bookName));
+
+        Book book = bookRepository.findByName(bookName);
+        if (null == book) {
+            return;
+        }
+
+        book.getBookAuthors().clear();
+        bookRepository.save(book);
+    }
+
+    /**
+     * 移除某书的作者
+     *
+     * @param bookName
      * @param authorName
      */
-    private void deleteAuthor(String authorName) {
-        logger.info(String.format("Remove Author[name: %s] ...", authorName));
+    private void removeAuthor(String bookName, String authorName) {
+        logger.info(String.format("removeAuthor [book_name:%s, author_name:%s] ...", bookName, authorName));
+
+        Book book = bookRepository.findByName(bookName);
+        if (null == book) {
+            return;
+        }
 
         Author author = authorRepository.findByName(authorName);
+        if (null == author) {
+            return;
+        }
+
+        book.getBookAuthors().removeIf(bookAuthor -> bookAuthor.getAuthor().equals(author));
+
+        bookRepository.save(book);
+    }
+
+    /**
+     * 移除某书的全部作者
+     *
+     * @param bookName
+     */
+    private void removeAllAuthors(String bookName) {
+        logger.info(String.format("removeAllAuthors [book_name:%s]", bookName));
+
+        Book book = bookRepository.findByName(bookName);
+        if (null == book) {
+            return;
+        }
+
+        book.getBookAuthors().removeAll(book.getBookAuthors());
+        bookRepository.save(book);
+    }
+
+    /**
+     * 删除
+     *
+     * @param name
+     */
+    private void deleteAuthor(String name) {
+        logger.info(String.format("deleteAuthor [name:%s] ...", name));
+
+        Author author = authorRepository.findByName(name);
         authorRepository.delete(author);
         authorRepository.flush();
     }
 
+    /**
+     * 删除全部，只删除作者，如果有作者和书籍有关联关系，则删除会报错
+     */
+    private void deleteAllAuthors() {
+        logger.info(String.format("Delete all authors ..."));
+
+        authorRepository.deleteAll();
+    }
+
 }
+
+
+//        clearBookAuthor(); // 删除4个关联关系
+//        display(); // 剩2本书和3位作者
+//
+//        // 清空数据继续后面的操作
+//        reInit(); // 重新初始化
+//        display();
+//
+//        deleteBook("Spring in Action"); // 删除2个关联关系，1本书
+//        display();
+//
+//        deleteAllBooks(); // 删除2个关联关系，1本书
+//        display(); // 剩3位作者
+
+
+// =================================================
+
+
+//
+//
+//
+//
+//    /**
+//     * 清空书籍和作者的关联关系
+//     */
+//    private void clearBookAuthor() {
+//        logger.info("Clear All [Book & Author]'s Relationship ...");
+//
+//        bookRepository.findAll().forEach(book -> {
+//            book.getBookAuthors().clear();
+//        });
+//    }
+//
+//    /**
+//     * 删除制定书籍
+//     *
+//     * @param bookName
+//     */
+//    private void deleteBook(String bookName) {
+//        logger.info(String.format("Remove Book[name: %s] ...", bookName));
+//
+//        Book book = bookRepository.findByName(bookName);
+//        bookRepository.delete(book);
+//    }
+//
+//    private void deleteAllBooks() {
+//        logger.info("Remove All Books ...");
+//
+//        bookRepository.deleteAll();
+//    }
+//
+//    /**
+//     * 删除制定作者
+//     *
+//     * @param authorName
+//     */
+//    private void deleteAuthor(String authorName) {
+//        logger.info(String.format("Remove Author[name: %s] ...", authorName));
+//
+//        Author author = authorRepository.findByName(authorName);
+//        authorRepository.delete(author);
+//        authorRepository.flush();
+//    }
