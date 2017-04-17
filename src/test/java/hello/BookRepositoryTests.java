@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.persistence.Transient;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -28,12 +27,8 @@ public class BookRepositoryTests {
     @Autowired
     private AuthorRepository authorRepository;
 
-    /**
-     * 初始化：2本书，3位作者，4个关联关系
-     */
     @Before
-    @Transient
-    public void save() {
+    public void init() {
         Book spring = new Book("Spring in Action");
         Book springboot = new Book("Spring Boot in Action");
 
@@ -54,54 +49,143 @@ public class BookRepositoryTests {
         bookRepository.save(Arrays.asList(spring, springboot));
     }
 
-    /**
-     * 清空所有数据
-     */
     @After
     public void deleteAll() {
+        // 删除所有书籍和关联关系，但不删除作者
         bookRepository.deleteAll();
+
+        // 删除所有作者，如果书籍和作者存在关联，则删除报错
+        authorRepository.deleteAll();
     }
 
     @Test
     public void findAll() {
         assertThat(bookRepository.findAll()).hasSize(2);
+
         assertThat(authorRepository.findAll()).hasSize(3);
     }
 
-    /**
-     * 清空书籍和作者的关联关系
-     */
     @Test
-    public void clearBookAuthor() {
-        bookRepository.findAll().forEach(book -> {
-            book.getBookAuthors().clear();
-        });
+    public void findByName() {
+        assertThat(bookRepository.findByName("Spring in Action")).isNotNull();
 
-        assertThat(bookRepository.findAll()).hasSize(2);
-        assertThat(authorRepository.findAll()).hasSize(3);
+        assertThat(authorRepository.findByName("Lewis")).isNotNull();
     }
 
-    /**
-     * 删除其中一本书
-     */
+    @Test
+    public void findByNameContaining() {
+        assertThat(bookRepository.findByNameContaining("Spring")).hasSize(2);
+
+        assertThat(authorRepository.findByNameContaining("e")).hasSize(2);
+    }
+
+    @Test
+    public void margeBook() {
+        Book book = bookRepository.findByName("Spring in Action");
+        assertThat(book).isNotNull();
+
+        book.setName("Spring in Action (4th Edition)");
+
+        assertThat(bookRepository.findByName("Spring in Action")).isNull();
+        assertThat(bookRepository.findByName("Spring in Action (4th Edition)")).isNotNull();
+    }
+
     @Test
     public void deleteBook() {
-        Book book = bookRepository.findByName("Spring in Action");
+        Book book = bookRepository.findByName("Spring Boot in Action");
+        assertThat(book).isNotNull();
+
         bookRepository.delete(book);
 
         assertThat(bookRepository.findAll()).hasSize(1);
+        assertThat(bookRepository.findByName("Spring Boot in Action")).isNull();
+
+        assertThat(authorRepository.findAll()).hasSize(3);
+        assertThat(authorRepository.findByName("Peter")).isNotNull();
+    }
+
+    @Test
+    public void clearAuthor() {
+        Book book = bookRepository.findByName("Spring in Action");
+        assertThat(book).isNotNull();
+
+        book.getBookAuthors().clear();
+
+        assertThat(bookRepository.findAll()).hasSize(2);
+        assertThat(bookRepository.findByName("Spring in Action").getBookAuthors()).isEmpty();
+
         assertThat(authorRepository.findAll()).hasSize(3);
     }
 
-    /**
-     * 删除所有书籍
-     */
     @Test
-    public void deleteAllBooks() {
-        bookRepository.deleteAll();
+    public void removeAuthor() {
+        Book book = bookRepository.findByName("Spring Boot in Action");
+        assertThat(book).isNotNull();
 
+        Author author = authorRepository.findByName("Peter");
+        assertThat(author).isNotNull();
+
+        book.getBookAuthors().removeIf(bookAuthor -> bookAuthor.getAuthor().equals(author));
+
+        assertThat(bookRepository.findAll()).hasSize(2);
+        assertThat(bookRepository.findByName("Spring Boot in Action").getBookAuthors()).hasSize(1);
+
+        assertThat(authorRepository.findAll()).hasSize(3);
+        assertThat(authorRepository.findByName("Peter")).isNotNull();
+    }
+
+    @Test
+    public void removeAllautors() {
+        Book book = bookRepository.findByName("Spring in Action");
+        assertThat(book).isNotNull();
+
+        book.getBookAuthors().removeAll(book.getBookAuthors());
+
+        assertThat(bookRepository.findAll()).hasSize(2);
+        assertThat(bookRepository.findByName("Spring in Action").getBookAuthors()).isEmpty();
+
+        assertThat(authorRepository.findAll()).hasSize(3);
+    }
+
+    @Test
+    public void plusAuthor() {
+        Book book = bookRepository.findByName("Spring in Action");
+        assertThat(book).isNotNull();
+
+        Author author = authorRepository.findByName("Jacob");
+        assertThat(author).isNull();
+
+        author = new Author("Jacob");
+        BookAuthor bookAuthor = new BookAuthor(book, author, new Date());
+        book.getBookAuthors().add(bookAuthor);
+        authorRepository.save(author);
+
+        assertThat(bookRepository.findByName("Spring in Action").getBookAuthors()).hasSize(3);
+
+        assertThat(authorRepository.findAll()).hasSize(4);
+        assertThat(authorRepository.findByName("Jacob")).isNotNull();
+    }
+
+    @Test
+    public void deleteAuthor() {
+        Book book = bookRepository.findByName("Spring Boot in Action");
+        assertThat(book).isNotNull();
+        bookRepository.delete(book);
+
+        Author author = authorRepository.findByName("Peter");
+        assertThat(author).isNotNull();
+        authorRepository.delete(author);
+        assertThat(authorRepository.findAll()).hasSize(2);
+    }
+
+    @Test
+    public void deleteAllAuthors() {
+        bookRepository.deleteAll();
         assertThat(bookRepository.findAll()).isEmpty();
         assertThat(authorRepository.findAll()).hasSize(3);
+
+        authorRepository.deleteAll();
+        assertThat(authorRepository.findAll()).isEmpty();
     }
 
 }
