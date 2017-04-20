@@ -297,7 +297,7 @@ public class AppRunner implements CommandLineRunner {
     }
 
     /**
-     * 删除，之删除作者，如果有作者和书籍有关联关系，则删除会报错
+     * 删除，只删除作者，如果被删除的作者和书籍有关联关系，则删除会报错
      *
      * @param name
      */
@@ -309,7 +309,7 @@ public class AppRunner implements CommandLineRunner {
     }
 
     /**
-     * 删除全部，只删除作者，如果有作者和书籍有关联关系，则删除会报错
+     * 删除全部，只删除作者，如果被删除的作者和书籍有关联关系，则删除会报错
      */
     private void deleteAllAuthors() {
         logger.info(String.format("Delete all authors ..."));
